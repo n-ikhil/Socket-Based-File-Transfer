@@ -6,8 +6,9 @@ import hashlib
 
 connections=list()
 frame_size=100
-server_toggle=0
 sockets=[]
+rtt=5
+retry_threshold=10
 
 def config_connections():    
 
@@ -32,6 +33,7 @@ def create_socket():
     for elem in connections:
         socket1=socket.socket()
         socket1.connect(elem.first,elem.second)
+        socket1.settimeout(rtt)
         sockets.append(socket1)
 
 def create_frame(data,frame_number):
@@ -50,9 +52,34 @@ def split_data(file, frame_size):
         yield data
 
 def send(data):
-    socket=config_socket()
-    if socket is None:
-        return False    
+    if len(sockets)==0:
+        return False
+    client=sockets[0]
+
+    ## sending
+    for i in range(retry_threshold):
+        try:
+            client.sendall(data)
+        except:
+            if len(sockets)==1:
+                return False
+            print("server connection failed, retrying with other server")
+            sockets.reverse()
+            return send(data)
+
+        ## recieving
+        try:
+            reply=client.recv(1024)
+            
+        except:
+            continue
+        
+        sockets.reverse()
+        return True
+
+
+
+
 
 
 config_connections()
