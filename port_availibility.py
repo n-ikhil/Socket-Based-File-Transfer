@@ -1,7 +1,7 @@
 import socket
 import time
 
-
+# https://gist.github.com/betrcode/0248f0fda894013382d7
 retry = 5
 delay = 10
 timeout = 3
