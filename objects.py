@@ -1,9 +1,12 @@
 import hashlib
+
 echar="+=+=+=+=/+\=+=+=+=+=+=+"
 
 max_attempts=10
-frame_size=1024
-rtt=10
+frame_size=2
+rttime=10
+frame_size_recv=10000
+# global max_attempts,frame_size,rttime
 
 def just_send(server_socket,message):
         global max_attempts,frame_size
@@ -20,7 +23,7 @@ def just_recieve(server_socket):
         global max_attempts,frame_size
         try:
                 # print(cls.frame_size)
-                message=server_socket.recv(frame_size)
+                message=server_socket.recv(frame_size_recv)
                 message=message.decode()
                 return True,message
         except Exception as e: 
@@ -43,7 +46,7 @@ def send_wait_receive(server_socket,message):
 
                 for attempts in range(max_attempts):
                         try:
-                                reply=server_socket.recv(frame_size)
+                                reply=server_socket.recv(frame_size_recv)
                                 reply=reply.decode()
                                 return True,reply    
                         except Exception as e: 
@@ -114,21 +117,23 @@ class utility:
 class frame_blueprint:
         def __init__(self,frame_number=-100,content=""):
                 if frame_number!=-100:
-                        self.header=frame_number
+                        self.header=str(frame_number)
                         self.content=str(content)
-                        checksum=hashlib.md5(content)
-                        self.trailer=checksum
-                        self.size=len(str(self.header))+len(self.content)+len(self.trailer)
+
+                        checksum=hashlib.md5(self.content.encode())
+                        self.trailer=str(checksum)
+                        self.size=len(self.header)+len(self.content)+len(self.trailer)
                         self.valid=True
                         return
                 else:
                         data=content.split(echar)
                         self.size=int(data[0],10)
-                        self.header=int(data[1],10)
+                        self.header=data[1]
                         self.content=data[2]
                         self.trailer=data[3]
-                        checksum=hashlib.md5(self.content)
-                        data_size=len(str(self.header))+len(self.content)+len(self.trailer)
+
+                        checksum=str(hashlib.md5(self.content.encode()))
+                        data_size=len(self.header)+len(self.content)+len(self.trailer)
 
                         if checksum==self.trailer and self.size==data_size:
                                 self.valid=True
@@ -139,14 +144,14 @@ class frame_blueprint:
 
         def to_string(self):
                 
-                string=str(size)+echar+str(self.header)+echar+self.content+echar+self.trailer
+                string=str(self.size)+echar+self.header+echar+self.content+echar+self.trailer
                 return string
         
-if __name__=="__main__":
-        global frame_size,rtt,max_attempts
-        frame_size=input("Enter the size of the  frame in KB : ")
-        frame_size=int(frame_size,10)
-        rtt=input("Enter the rtt : ")
-        rtt=int(rtt,10)
-        max_attempts=input("Enter the maximum number of resends : ")
-        max_attempts=int(rtt,10)
+# if __name__=="__main__":
+#         # global max_attempts,frame_size
+#         frame_size=input("Enter the size of the  frame in KB : ")
+#         frame_size=int(frame_size,10)
+#         rttime=input("Enter the rtt : ")
+#         rttime=int(rttime,10)
+#         max_attempts=input("Enter the maximum number of resends : ")
+#         max_attempts=int(max_attempts,10)

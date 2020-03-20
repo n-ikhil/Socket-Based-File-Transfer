@@ -151,29 +151,41 @@ def communicate(conn,address):
     print("Password is : ", password)
     ''' username and password are now obtained '''
     
-    # msg="True verified"
-    # result=just_send(conn,msg)
-    # conn.close()
-    # if not result:
-    #     return False
-    # return True
-
-    ###
     result,hsocket=verify(username,password)
     if not result:
         msg="False"
         result=just_send(conn,msg)
         conn.close()
         return False
+    
+    msg="True"
+    result=just_send(conn,msg)
 
     # frame_input=get_frame(conn,hsocket)
-
+    print("waiting to recieve file data")
     '''initiate data transfer'''
+
     recieving=True
 
     while recieving:
-        recieving,data=get_and_forward(conn,hsocket)
-        print(data)
+        result,data=just_recieve(conn)
+        if not result:
+            conn.close()
+        inframe=frame_blueprint(content=data)
+        print(inframe.content)
+        if inframe.valid:
+            msg="1"
+        else:
+            msg="0"
+        result=just_send(conn,msg)
+
+        if not result:
+            return
+
+    # while recieving:
+        # recieving,data=get_and_forward(conn,hsocket)
+    result,reply=just_recieve(hsocket)
+    print(reply)
     
 
     return True
@@ -209,6 +221,7 @@ def communicate(conn,address):
 
 get_port()
 server=socket.socket()
+# ()()
 porttemp="300"
 port=input("Enter the port to open : ")
 port=int(porttemp+port,10)

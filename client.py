@@ -34,17 +34,20 @@ def create_sockets(ip1,port1,ip2,port2):
 
 def complete_authentication(sockets,username,password):
 	# sockets=list()
+	delete=[]
 	for server in sockets:        
 		result=just_send(server,username)
 		if not result:
 			server.close()
-			sockets.remove(server)
+			delete.append(server)
+			# sockets.remove(server)
 			continue
 			# return False
 		result,reply=just_recieve(server)
 		if not result:
 			server.close()
-			sockets.remove(server)
+			delete.append(server)
+			# sockets.remove(server)
 			continue
 		print(reply)
 
@@ -56,15 +59,18 @@ def complete_authentication(sockets,username,password):
 		result,reply=just_recieve(server)
 		if not result:
 			server.close()
-			sockets.remove(server)
+			delete.append(server)
+			# sockets.remove(server)
 			continue
 		print("verification result ", reply)
 
-		if reply.startswith("False")=="False":
+		if reply.startswith("False"):
 			server.close()
-			sockets.remove(server)
+			delete.append(server)
+			# sockets.remove(server)
 			continue
-
+	for server in delete:
+		sockets.remove(server)
 	if len(sockets)==0:
 		return False
 	return True
@@ -76,17 +82,19 @@ def split_data(file, frame_size):
 			break
 		yield data
 
-def create_frame(data,frame_number):
-	data=str(frame_number)+data
-	checksum=hashlib.md5(data)
-	data=data+checksum
-	return data
+# def create_frame(data,frame_number):
+# 	print(data,frame_number)
+# 	data=str(frame_number)+data
+# 	data=data.encode()
+# 	checksum=hashlib.md5(data)
+# 	data=data+checksum
+# 	return data
 		
 
 def send_frame(sockets,frame):
-	if len(sockets==0):
+	if len(sockets)==0:
 		return False,""
-	for i in range(len(socket)):
+	for i in range(len(sockets)):
 		result,reply=send_wait_receive(sockets[i],frame)
 		if not result:
 			continue
@@ -98,20 +106,21 @@ def send_frame(sockets,frame):
 	sockets.reverse()
 	return False
 
-max_time=5
-frame_size=1024
-max_attempts=4
+# max_time=5
+# frame_size=1024
+# max_attempts=4
 
 utility(max_attempts,frame_size)
 
 # ip1=input("Enter the ip address of server 1: ")
 ip1="localhost"
+porttemp="300"
 port1=input("Enter the port of server 1: ")
-port1=int(port1,10)
+port1=int(porttemp+port1,10)
 # ip2=input("Enter the ip address of server 2: ")
 # port2=input("Enter the port of server 2: ")
 # port2=int(port2,10)
-
+port2=port1
 
 
 sockets=create_sockets(ip1,port1,ip1,port2)
@@ -135,10 +144,27 @@ print("verification sucessfull, initiating file transfer")
 
 
 for conn in sockets:
-	conn.settimeout(max_time)
+	conn.settimeout(rttime)
 
-filename=input("Enter the file path")
+filename=input("Enter the file path: ")
 frame_number=0
+
+with open(filename, 'rb') as f:
+	while 1:
+		data = f.read(frame_size)
+		if not data:
+			break
+		# print(byte_s)
+		print("Read in client: ",data)
+		frame_number+=1
+		frame=frame_blueprint(content=data,frame_number=frame_number)
+		while True:
+			result,reply=send_frame(sockets,frame.to_string())
+			if not result:
+				print("File not sent")
+				exit()
+			elif reply=="1":
+				break		
 
 with open(filename) as file:
 
