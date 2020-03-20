@@ -3,6 +3,8 @@ import sys
 import csv 
 import threading
 from objects import *
+from constants import *
+
 
 creds = "../data_files/login_credentials.csv"
 
@@ -167,7 +169,7 @@ def communicate(conn,address):
     '''initiate data transfer'''
 
     recieving=True
-
+    # hsocket.close()
     while recieving:
         result,data=just_recieve(conn)
         if not result:
@@ -178,6 +180,7 @@ def communicate(conn,address):
         if data=="":
             continue
         ''''''
+        
         result,reply=send_wait_receive(hsocket,data)
         if not result:
             msg="3"
@@ -186,7 +189,16 @@ def communicate(conn,address):
             hsocket.close()
             recieving=False
             return
+        
+        # reply="1"
+        if reply=="3" or reply=="4":
+            hsocket.close()
+            print("Returning reply to client ", reply)
+            result=just_send(conn,reply)
+            conn.close()
+            return
 
+        print("Returning reply to client ", reply)
         result=just_send(conn,reply)
         if not result:
             hsocket.close()
@@ -194,18 +206,19 @@ def communicate(conn,address):
             recieving=False
             return
         
+        
+# ##
+    #     inframe=frame_blueprint(content=data)
+    #     print(inframe.content)
+    #     if inframe.valid:
+    #         msg="1"
+    #     else:
+    #         msg="0"
+    #     result=just_send(conn,msg)
 
-        inframe=frame_blueprint(content=data)
-        print(inframe.content)
-        if inframe.valid:
-            msg="1"
-        else:
-            msg="0"
-        result=just_send(conn,msg)
-
-        if not result:
-            recieving=False
-    return
+    #     if not result:
+    #         recieving=False
+    # return -------------------
     #  while recieving:
     #         result,data=just_recieve(conn)
     #     if not result:

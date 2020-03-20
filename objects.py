@@ -1,16 +1,15 @@
 import hashlib
-
+from constants import *
 echar="+=+=+=+=/+\=+=+=+=+=+=+"
 flag="*7*#E^$%^IDFEDFMKFXSE%$S$$%$*"
 
 max_attempts=10
-frame_size=2
 rttime=100
-frame_size_recv=10000
+frame_size_recv=1000000
 # global max_attempts,frame_size,rttime
 
 def just_send(server_socket,message):
-        print("At send", message)
+        # print("At send", message)
         global max_attempts,frame_size
         message=message.encode()
         try:
@@ -22,7 +21,7 @@ def just_send(server_socket,message):
         return False
 
 def just_recieve(server_socket):
-        print("At receive")
+        # print("At receive")
         global max_attempts,frame_size
         try:
                 # print(cls.frame_size)
@@ -37,7 +36,7 @@ def just_recieve(server_socket):
 
 def send_wait_receive(server_socket,message):
                 # global variables
-                print("At send wait receive", message)
+                # print("At send wait receive", message)
                 global max_attempts,frame_size
                 # end
                 # check if socket is live
@@ -49,7 +48,7 @@ def send_wait_receive(server_socket,message):
                         return False,""
 
                 for attempts in range(max_attempts):
-                        print("attempting at send wait receive ",attempts)
+                        # print("attempting at send wait receive ",attempts)
                         try:
                                 reply=server_socket.recv(frame_size_recv)
                                 reply=reply.decode()
@@ -130,7 +129,8 @@ class frame_blueprint:
                         checksum=checksum.digest()
                         checksum=str(checksum)
                         self.trailer=checksum
-                        self.size=len(self.header)+len(self.content)+len(self.trailer)
+                        # self.size=len(self.header)+len(self.content)+len(self.trailer)
+                        self.size="1"
                         self.valid=True
                         return
                 else:
@@ -143,7 +143,8 @@ class frame_blueprint:
                         checksum=hashlib.md5(self.content.encode())
                         checksum=checksum.digest()
                         checksum=str(checksum)
-                        data_size=len(self.header)+len(self.content)+len(self.trailer)
+                        data_size=1
+                        # data_size=len(self.header)+len(self.content)+len(self.trailer)
                         # print(checksum,self.trailer,self.size,data_size)
                         
                         if checksum==self.trailer and self.size==data_size:
