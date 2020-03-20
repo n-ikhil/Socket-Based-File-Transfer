@@ -4,7 +4,7 @@ import os
 import hashlib 
 from objects import *
 from constants import *
-
+import random 
 
 toggler=True
 
@@ -97,26 +97,12 @@ def send_frame(sockets,frame):
 	global toggler
 	if len(sockets)==0:
 		return False,""
-	# for i in range(len(sockets)):
-	# 	result,reply=send_wait_receive(sockets[i],frame)
-	# 	if not result:
-	# 		continue
-	# 	if result and reply=="1":
-	# 		sockets.reverse()
-	# 		return True,"1"
-	# 	if result and reply=="0":
-	# 		return True,"0"
-	# 	if result and reply=="3":
-	# 		return False,""
-	# result,reply=send_wait_receive(sockets[0],frame)
-	# print(result,reply)
-	# return result,reply
 	if toggler:
 		result,reply=send_wait_receive(sockets[0],frame)
 	else:
 		result,reply=send_wait_receive(sockets[1],frame)
 	if not result:
-		return False
+		return False,"3"
 	toggler=not toggler
 	
 	return result,reply
@@ -171,9 +157,10 @@ for conn in sockets:
 
 filename=input("Enter the file path: ")
 frame_number=0
-
+sent=False
+looper=True
 with open(filename, 'r') as f:
-	while 1:
+	while looper:
 		data = f.read(frame_size)
 		if not data:
 			frame=frame_blueprint(content=flag,frame_number=frame_number+1)
@@ -188,6 +175,7 @@ with open(filename, 'r') as f:
 				elif reply=="1":
 					break
 				elif reply=="4":
+					sent=True
 					print("File uploaded !")
 					break
 			break
@@ -195,13 +183,17 @@ with open(filename, 'r') as f:
 		# print("Read in client: ",data)
 		frame_number+=1
 		frame=frame_blueprint(content=data,frame_number=frame_number)
-		while True:
+		attempts=random.choice([1,2,5,7,6, 4, 8, 10, 3])+3
+		for i in range(attempts):
 			result,reply=send_frame(sockets,frame.to_string())
 			if not result or reply=="3":
 				print("File not sent")
 				exit()
 			elif reply=="1":
 				break
+			
+	
+
 				
 	# while 1:
 	# 	data = f.read(frame_size)
@@ -213,6 +205,10 @@ with open(filename, 'r') as f:
 # print("File uploaded")
 for conn in sockets:
 	conn.close()
+if sent:
+	print("successfully sent")
+else:
+    print("not sent")
 print("closing")
 			
 

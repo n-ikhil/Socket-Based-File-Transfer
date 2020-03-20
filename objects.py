@@ -1,15 +1,24 @@
 import hashlib
 from constants import *
-echar="+=+=+=+=/+\=+=+=+=+=+=+"
-flag="*7*#E^$%^IDFEDFMKFXSE%$S$$%$*"
+echar="+=+=+="
+flag="*|*|"
 
+size=10
 max_attempts=10
 rttime=100
 frame_size_recv=1000000
 # global max_attempts,frame_size,rttime
 
+def decimalToBinary(n):  
+        # return 
+        temp=bin(n).replace("0b", "")
+        dif=size-len(temp)
+        pre="0"*dif
+        temp=pre+temp
+        return temp
+
 def just_send(server_socket,message):
-        # print("At send", message)
+        print("At send", message)
         global max_attempts,frame_size
         message=message.encode()
         try:
@@ -21,7 +30,7 @@ def just_send(server_socket,message):
         return False
 
 def just_recieve(server_socket):
-        # print("At receive")
+        print("At receive")
         global max_attempts,frame_size
         try:
                 # print(cls.frame_size)
@@ -122,48 +131,65 @@ class utility:
 class frame_blueprint:
         def __init__(self,frame_number=-100,content=""):
                 if frame_number!=-100:
-                        self.header=str(frame_number)
-                        self.content=str(content)
-
+                        self.header=decimalToBinary(frame_number)
+                        self.content=str(content)                        
+                        # self.size=
+                        # temp=len(self.header)+len(self.content)+16
+                        # self.size=decimalToBinary(temp)
+                        self.string=self.header+echar+self.content+echar
                         checksum=hashlib.md5(self.content.encode())
                         checksum=checksum.digest()
                         checksum=str(checksum)
+                        self.string=self.string+checksum
                         self.trailer=checksum
-                        # self.size=len(self.header)+len(self.content)+len(self.trailer)
-                        self.size="1"
                         self.valid=True
+                        # print(self.string)
                         return
                 else:
-                        data=content.split(echar)
-                        self.size=int(data[0],10)
-                        self.header=data[1]
-                        self.content=data[2]
-                        self.trailer=data[3]
 
-                        checksum=hashlib.md5(self.content.encode())
-                        checksum=checksum.digest()
-                        checksum=str(checksum)
-                        data_size=1
-                        # data_size=len(self.header)+len(self.content)+len(self.trailer)
-                        # print(checksum,self.trailer,self.size,data_size)
+                        # print(content,checksum,calchecksum)
                         
-                        if checksum==self.trailer and self.size==data_size:
-                                self.valid=True
-                        else:
+                        # checksum=content[-46:]
+                        # dif=len(content)-46
+                        # temp=content[0:dif]
+                        # calchecksum=hashlib.md5(temp.encode())
+                        # calchecksum=calchecksum.digest()
+                        # calchecksum=str(calchecksum)
+                        # print(content,checksum,calchecksum)
+                        # if checksum==calchecksum:
+                        #         self.valid=True
+                        # else:
+                        #         self.valid=False
+                        try:
+
+                                data=content.split(echar)
+                                self.header=data[0]
+                                self.content=data[1]
+                                self.trailer=data[2]
+                                self.frame_number=int(self.header,2)
+
+                                checksum=hashlib.md5(self.content.encode())
+                                checksum=checksum.digest()
+                                checksum=str(checksum)
+                                
+
+                                
+                                # data_size=len(self.header)+len(self.content)+len(self.trailer)
+                                # print(checksum,self.trailer,self.size,data_size)
+                                
+                                if checksum==self.trailer:
+                                        self.valid=True
+                                else:
+                                        self.valid=False
+                        
+                        except:
                                 self.valid=False
                         return
                 
 
         def to_string(self):
-                
-                string=str(self.size)+echar+self.header+echar+self.content+echar+self.trailer
-                return string
+                # print(self.to_string)
+                return self.string
+                # string=str(self.size)+echar+self.header+echar+self.content+echar+self.trailer
+                # return string
         
-# if __name__=="__main__":
-#         # global max_attempts,frame_size
-#         frame_size=input("Enter the size of the  frame in KB : ")
-#         frame_size=int(frame_size,10)
-#         rttime=input("Enter the rtt : ")
-#         rttime=int(rttime,10)
-#         max_attempts=input("Enter the maximum number of resends : ")
-#         max_attempts=int(max_attempts,10)

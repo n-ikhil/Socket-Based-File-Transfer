@@ -1,1 +1,1 @@
-frame_size=10000
+frame_size=100000

@@ -44,19 +44,23 @@ def write_to_file(filname,username):
     buf=buffers[username]
     try :
         f=open(filname+".txt","w") 
-        size=len(buf)
+        size=len(buf)+20
         for i in range(size):
-            frame_number=i+1
-            for item in buf:
-                number=int(item.header,10)
-                # print(number,frame_number,item.content)
-                if number==frame_number:
-                    data=item.content
-                    # print(data,type(data))
-                    # data=str()
-                    # data.decode('ascii')
+            # frame_number=i+1
+            # for item in buf:
+            #     number=int(item.header,10)
+            #     # print(number,frame_number,item.content)
+            #     if number==frame_number:
+            #         data=item.content
+            #         # print(data,type(data))
+            #         # data=str()
+            #         # data.decode('ascii')
                     
-                    f.write(data)
+            #         f.write(data)
+            if i in buf:
+                f.write(buf[i])
+                del buf[i]
+            
         del buffers[username]
         f.close()
         return True
@@ -104,7 +108,7 @@ def communicate(conn,address):
     recieving=True
     # buffers[username]=[]
     if username not in buffers:
-        buffers[username]=[]
+        buffers[username]={}
     buf=buffers[username]
     while recieving:
         result,data=just_recieve(conn)
@@ -132,7 +136,8 @@ def communicate(conn,address):
                     # conn.close()
                 # server.close()
             else:
-                buf.append(inframe)
+                # buf.append(inframe)
+                buf[inframe.frame_number]=inframe.content
         else:
             msg="0"
         # print(inframe.content,buf,msg)

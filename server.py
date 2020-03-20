@@ -120,8 +120,21 @@ def get_and_forward(conn,hsocket):
     result,reply=send_wait_receive(hsocket,frame_incoming)
     if reply=="0":
         return 1
-    
 
+p=0    
+def corrupt(data):
+    global p
+    p=p+1
+    p=p%10
+    if p==0:
+        # print(data)
+        frame=frame_blueprint(content=data)
+        if frame.content==flag:
+            return data
+        temp=len(flag)+10
+        data="0"*64
+        # print(data)
+    return data
 
 
 
@@ -180,7 +193,7 @@ def communicate(conn,address):
         if data=="":
             continue
         ''''''
-        
+        data=corrupt(data)
         result,reply=send_wait_receive(hsocket,data)
         if not result:
             msg="3"
