@@ -152,6 +152,7 @@ def communicate(conn,address):
     ''' username and password are now obtained '''
     
     result,hsocket=verify(username,password)
+    # result=True
     if not result:
         msg="False"
         result=just_send(conn,msg)
@@ -171,6 +172,29 @@ def communicate(conn,address):
         result,data=just_recieve(conn)
         if not result:
             conn.close()
+            hsocket.close()
+            recieving=False
+            return
+        if data=="":
+            continue
+        ''''''
+        result,reply=send_wait_receive(hsocket,data)
+        if not result:
+            msg="3"
+            just_send(conn,msg)
+            conn.close()
+            hsocket.close()
+            recieving=False
+            return
+
+        result=just_send(conn,reply)
+        if not result:
+            hsocket.close()
+            conn.close()
+            recieving=False
+            return
+        
+
         inframe=frame_blueprint(content=data)
         print(inframe.content)
         if inframe.valid:
@@ -180,43 +204,60 @@ def communicate(conn,address):
         result=just_send(conn,msg)
 
         if not result:
-            return
+            recieving=False
+    return
+    #  while recieving:
+    #         result,data=just_recieve(conn)
+    #     if not result:
+    #         conn.close()
+    #     if data=="":
+    #         continue
+    #     inframe=frame_blueprint(content=data)
+    #     print(inframe.content)
+    #     if inframe.valid:
+    #         msg="1"
+    #     else:
+    #         msg="0"
+    #     result=just_send(conn,msg)
+
+    #     if not result:
+    #         return
 
     # while recieving:
         # recieving,data=get_and_forward(conn,hsocket)
-    result,reply=just_recieve(hsocket)
-    print(reply)
+    # result,reply=just_recieve(hsocket)
+    # print(reply)
     
 
-    return True
-    result=True
-    reply="True"
-    hsocket=""
-    login=reply
-    msg="False"
-    if not result:
-        just_send(conn,msg)
-        conn.close()
-        return False
-    msg="True"
-    just_send(conn,msg)
-    # attendance=check_attendance(username)
+    # return True
+    # result=True
+    # reply="True"
+    # hsocket=""
+    # login=reply
+    # msg="False"
+    # if not result:
+    #     just_send(conn,msg)
+    #     conn.close()
+    #     return False
+    # msg="True"
+    # just_send(conn,msg)
+    # # attendance=check_attendance(username)
 
-    reply="Yes at"
-    attendance=reply
-    msg="False"
-    if not result:
-        just_send(conn,msg)
-        conn.close()
-        return False
+    # reply="Yes at"
+    # attendance=reply
+    # msg="False"
+    # if not result:
+    #     just_send(conn,msg)
+    #     conn.close()
+    #     return False
     
-    msg=login + attendance
-    result=just_send(conn,msg)
+    # msg=login + attendance
+    # result=just_send(conn,msg)
 
-    conn.close()
-    if result:
-        return True
-    return False
+    # conn.close()
+    # if result:
+    #     return True
+    # return False
     
 
 get_port()

@@ -6,6 +6,8 @@ from objects import *
 
 rtl="localhost.rtl"
 
+buffers={}
+
 def get_port():
     with open(rtl, 'r') as database: 
         # print("876t")
@@ -31,7 +33,25 @@ def verify(us,ps):
         return "False , not correct"
     # print("veridone")
 
+def write_to_file(filname,username):
+    buf=buffers[username]
+    try :
+        f=open(filname+".txt","w") 
+        size=len(buf)
+        for i in range(size):
+            frame_number=i+1
+            for item in buf:
+                if int(item.header,10)==frame_number:
+                    f.write(item.content)
+        del buffers[username]
+        return True
+    except Exception as e:
+        print(e)
+        return False
+
+
 def communicate(conn,address):
+    global buffers
     ''' copied'''
     msg="connection accepted by host-a"+str(address)+"\n send username"
     result=just_send(conn,msg)
@@ -65,6 +85,42 @@ def communicate(conn,address):
         conn.close()
         return False
     ## further exchanging
+    recieving=True
+    buffers[username]=[]
+    buf=buffers[username]
+    while recieving:
+        result,data=just_recieve(conn)
+        if not result:
+            conn.close()
+            return
+        if data=="":
+            continue
+        inframe=frame_blueprint(content=data)
+        print(inframe.content)
+        if inframe.valid:
+            msg="1"
+            # frame_number=int(inframe.header,10)
+            # s
+            if inframe.content==flag:
+                result=write_to_file(filname=username,username=username)
+                if not result:
+                    msg="3"
+                    print("some error writing file")
+                    recieving=False
+                else:
+                    print("successfully wrote file")
+                    msg="1"
+                    recieving=False
+                    conn.close()
+            else:
+                buf.append(inframe)
+        else:
+            msg="0"
+        result=just_send(conn,msg)
+
+        if not result:
+            return
+
     
     return True
 

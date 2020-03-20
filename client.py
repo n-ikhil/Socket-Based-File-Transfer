@@ -94,17 +94,29 @@ def split_data(file, frame_size):
 def send_frame(sockets,frame):
 	if len(sockets)==0:
 		return False,""
-	for i in range(len(sockets)):
-		result,reply=send_wait_receive(sockets[i],frame)
-		if not result:
-			continue
-		if result and reply=="1":
-			sockets.reverse()
-			return True,"1"
-		if result and reply=="0":
-			return True,"0"
+	# for i in range(len(sockets)):
+	# 	result,reply=send_wait_receive(sockets[i],frame)
+	# 	if not result:
+	# 		continue
+	# 	if result and reply=="1":
+	# 		sockets.reverse()
+	# 		return True,"1"
+	# 	if result and reply=="0":
+	# 		return True,"0"
+	# 	if result and reply=="3":
+	# 		return False,""
+	result,reply=send_wait_receive(sockets[0],frame)
+	return result,reply
+		
 	sockets.reverse()
-	return False
+	return False,""
+
+def send_frame_both(sockets,frame):
+	if len(sockets)==0:
+		return False,""
+	for i in range(len(sockets)):			
+		result,reply=send_wait_receive(sockets[i],frame)		
+	return True,""
 
 # max_time=5
 # frame_size=1024
@@ -153,6 +165,14 @@ with open(filename, 'rb') as f:
 	while 1:
 		data = f.read(frame_size)
 		if not data:
+			frame=frame_blueprint(content=flag,frame_number=frame_number+1)
+			result,reply=send_frame_both(sockets,frame.to_string())
+			while True:
+				if not result:
+					print("File not sent")
+					exit()
+				elif reply=="1":
+					break
 			break
 		# print(byte_s)
 		print("Read in client: ",data)
@@ -164,20 +184,13 @@ with open(filename, 'rb') as f:
 				print("File not sent")
 				exit()
 			elif reply=="1":
-				break		
-
-with open(filename) as file:
-
-	for data in split_data(file,frame_size):
-		frame_number+=1
-		frame=frame_blueprint(data,frame_number)
-		while True:
-			result,reply=send_frame(sockets,frame.to_string())
-			if not result:
-				print("File not sent")
-				exit()
-			elif reply=="1":
-				break			
+				break	
+	# while 1:
+	# 	data = f.read(frame_size)
+	# 	if not data:
+	# 		break
+	# 	frame=frame_blueprint(content=data,frame_number=frame_number+1)
+	# 	print(frame.to_string())
 
 print("File uploaded")
 for conn in sockets:
