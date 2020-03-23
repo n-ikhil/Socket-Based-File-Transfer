@@ -289,9 +289,9 @@ def communicate(conn,address):
 get_port()
 server=socket.socket()
 # ()()
-porttemp="300"
+# porttemp="300"
 port=input("Enter the port to open : ")
-port=int(porttemp+port,10)
+port=int(port,10)
 server.bind(('',port))
 server.listen(5)
 print("Server created")

@@ -121,27 +121,27 @@ def send_frame_both(sockets,frame):
 
 utility(max_attempts,frame_size)
 
-# ip1=input("Enter the ip address of server 1: ")
-ip1="localhost"
-porttemp="300"
+ip1=input("Enter the ip address of server 1: ")
+# ip1="localhost"
+# porttemp="300"
 port1=input("Enter the port of server 1: ")
-port1=int(porttemp+port1,10)
-# ip2=input("Enter the ip address of server 2: ")
-# port2=input("Enter the port of server 2: ")
-# port2=int(port2,10)
-port2=port1
+port1=int(	port1,10)
+ip2=input("Enter the ip address of server 2: ")
+port2=input("Enter the port of server 2: ")
+port2=int(port2,10)
+# port2=port1
 
 
-sockets=create_sockets(ip1,port1,ip1,port2)
+sockets=create_sockets(ip1,port1,ip2,port2)
 if len(sockets)==0:
 	print("No connection were found")
 	exit()
 # starting connection
 #()()
-username="nikhil"
-password="password"
-# username=input("Enter the username: ")
-# password=input("Enter the password: ")
+# username="nikhil"
+# password="password"
+username=input("Enter the username: ")
+password=input("Enter the password: ")
 result=complete_authentication(sockets,username,password)
 if not result:
 	print("Verification unsucessfull")
